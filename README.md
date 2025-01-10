@@ -19,7 +19,7 @@ cargo install --path .
 Then finally you can launch the tools using pipe.
 
 ```
-blocks_iterator_cli --blocks-dir .bitcoin/blocks/ --network bitcoin | scriptpubkeys_per_block
+blocks_iterator_cli --blocks-dir .bitcoin/blocks/ --network bitcoin | scriptpubkeys_per_block > scriptpubkeys_per_block.csv
 ```
 
 # Results 
