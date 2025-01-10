@@ -1,21 +1,18 @@
 use blocks_iterator::PipeIterator;
 use env_logger::Env;
-use log::{info};
+use log::info;
 use std::error::Error;
 use std::io;
-use std::io::Write;
-use std::fs::File;
-
 
 fn main() -> Result<(), Box<dyn Error>> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     info!("start");
     let iter = PipeIterator::new(io::stdin(), None);
-    
-    let mut output_file = File::create("scriptpubkeys_per_block.csv").unwrap();
-    output_file.write_all(b"Height, Timestamp, Nonce, Tx, Empty, P2PK, P2PKH, P2SH, BareMultisig, P2WSH, P2WPKH, P2TR, OpReturn, Others\n").unwrap();
-    
-    for block_extra in iter { // for each block
+
+    println!("Height, Timestamp, Nonce, Tx, Empty, P2PK, P2PKH, P2SH, BareMultisig, P2WSH, P2WPKH, P2TR, OpReturn, Others");
+
+    for block_extra in iter {
+        // for each block
         let mut txno = 0;
         let mut empty = 0;
         let mut p2pk = 0;
@@ -28,10 +25,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut opreturn = 0;
         let mut others = 0;
 
-        for (_txid, tx) in block_extra.iter_tx() { // for each transaction
+        for (_txid, tx) in block_extra.iter_tx() {
+            // for each transaction
             txno = txno + 1;
-            
-            for (_i, output) in tx.output.iter().enumerate() { // for each output
+
+            for (_i, output) in tx.output.iter().enumerate() {
+                // for each output
                 if output.script_pubkey.is_empty() {
                     empty = empty + 1;
                 } else if output.script_pubkey.is_p2pk() {
@@ -55,15 +54,24 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
             } // output
         } // transaction
-        
-        // append a row in the results file
-        let buff = format!(
+
+        println!(
             "{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}",
-            block_extra.height, block_extra.block.header.time, block_extra.block.header.nonce, txno, empty, p2pk, p2pkh, p2sh, multisig, p2wsh, p2wpkh, p2tr, opreturn, others
+            block_extra.height,
+            block_extra.block.header.time,
+            block_extra.block.header.nonce,
+            txno,
+            empty,
+            p2pk,
+            p2pkh,
+            p2sh,
+            multisig,
+            p2wsh,
+            p2wpkh,
+            p2tr,
+            opreturn,
+            others
         );
-        output_file.write_all(buff.as_bytes()).unwrap();
-        output_file.write_all(b"\n").unwrap();
-    
     } // block
     info!("stop");
     Ok(())
