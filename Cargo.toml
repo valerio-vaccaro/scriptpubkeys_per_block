@@ -4,6 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-blocks_iterator = "1.0.5"
+blocks_iterator = "2.0.0"
 env_logger = "0.11.6"
 log = "0.4.22"

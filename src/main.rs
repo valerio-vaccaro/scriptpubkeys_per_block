@@ -57,9 +57,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         println!(
             "{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}",
-            block_extra.height,
-            block_extra.block.header.time,
-            block_extra.block.header.nonce,
+            block_extra.height(),
+            block_extra.block().header.time,
+            block_extra.block().header.nonce,
             txno,
             empty,
             p2pk,

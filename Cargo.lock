@@ -158,9 +158,9 @@ dependencies = [
 
 [[package]]
 name = "blocks_iterator"
-version = "1.0.5"
+version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba655e006030249672e4ea2af57a719a5d2f675d2d87bc462b929d9d4e2b34ef"
+checksum = "59a1fbf1d7af4509aabb0bab32e9b58dd56a4a72d6c27953701b490f8ef9da76"
 dependencies = [
  "bitcoin",
  "bitcoin_slices",
