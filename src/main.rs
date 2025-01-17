@@ -4,6 +4,20 @@ use log::info;
 use std::error::Error;
 use std::io;
 
+struct Counters {
+    txno: u32,
+    empty: u32,
+    p2pk: u32,
+    p2pkh: u32,
+    p2sh: u32,
+    multisig: u32,
+    p2wsh: u32,
+    p2wpkh: u32,
+    p2tr: u32,
+    opreturn: u32,
+    others: u32,
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     info!("start");
@@ -13,44 +27,46 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     for block_extra in iter {
         // for each block
-        let mut txno = 0;
-        let mut empty = 0;
-        let mut p2pk = 0;
-        let mut p2pkh = 0;
-        let mut p2sh = 0;
-        let mut multisig = 0;
-        let mut p2wsh = 0;
-        let mut p2wpkh = 0;
-        let mut p2tr = 0;
-        let mut opreturn = 0;
-        let mut others = 0;
+        let mut counters = Counters {
+            txno: 0,
+            empty: 0,
+            p2pk: 0,
+            p2pkh: 0,
+            p2sh: 0,
+            multisig: 0,
+            p2wsh: 0,
+            p2wpkh: 0,
+            p2tr: 0,
+            opreturn: 0,
+            others: 0,
+        };
 
         for (_txid, tx) in block_extra.iter_tx() {
             // for each transaction
-            txno = txno + 1;
+            counters.txno += 1;
 
             for (_i, output) in tx.output.iter().enumerate() {
                 // for each output
                 if output.script_pubkey.is_empty() {
-                    empty = empty + 1;
+                    counters.empty += 1;
                 } else if output.script_pubkey.is_p2pk() {
-                    p2pk = p2pk + 1;
+                    counters.p2pk += 1;
                 } else if output.script_pubkey.is_p2pkh() {
-                    p2pkh = p2pkh + 1;
+                    counters.p2pkh += 1;
                 } else if output.script_pubkey.is_p2sh() {
-                    p2sh = p2sh + 1;
+                    counters.p2sh += 1;
                 } else if output.script_pubkey.is_multisig() {
-                    multisig = multisig + 1;
+                    counters.multisig += 1;
                 } else if output.script_pubkey.is_p2wsh() {
-                    p2wsh = p2wsh + 1;
+                    counters.p2wsh += 1;
                 } else if output.script_pubkey.is_p2wpkh() {
-                    p2wpkh = p2wpkh + 1;
+                    counters.p2wpkh += 1;
                 } else if output.script_pubkey.is_p2tr() {
-                    p2tr = p2tr + 1;
+                    counters.p2tr += 1;
                 } else if output.script_pubkey.is_op_return() {
-                    opreturn = opreturn + 1;
+                    counters.opreturn += 1;
                 } else {
-                    others = others + 1;
+                    counters.others += 1;
                 }
             } // output
         } // transaction
@@ -60,17 +76,17 @@ fn main() -> Result<(), Box<dyn Error>> {
             block_extra.height(),
             block_extra.block().header.time,
             block_extra.block().header.nonce,
-            txno,
-            empty,
-            p2pk,
-            p2pkh,
-            p2sh,
-            multisig,
-            p2wsh,
-            p2wpkh,
-            p2tr,
-            opreturn,
-            others
+            counters.txno,
+            counters.empty,
+            counters.p2pk,
+            counters.p2pkh,
+            counters.p2sh,
+            counters.multisig,
+            counters.p2wsh,
+            counters.p2wpkh,
+            counters.p2tr,
+            counters.opreturn,
+            counters.others
         );
     } // block
     info!("stop");
