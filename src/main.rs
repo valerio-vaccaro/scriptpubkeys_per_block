@@ -4,6 +4,7 @@ use log::info;
 use std::error::Error;
 use std::io;
 
+#[derive(Default)]
 struct Counters {
     txno: u32,
     empty: u32,
@@ -27,19 +28,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     for block_extra in iter {
         // for each block
-        let mut counters = Counters {
-            txno: 0,
-            empty: 0,
-            p2pk: 0,
-            p2pkh: 0,
-            p2sh: 0,
-            multisig: 0,
-            p2wsh: 0,
-            p2wpkh: 0,
-            p2tr: 0,
-            opreturn: 0,
-            others: 0,
-        };
+        let mut counters = Counters::default();
 
         for (_txid, tx) in block_extra.iter_tx() {
             // for each transaction
