@@ -1,3 +1,7 @@
+use bitcoin_slices::bitcoin;
+use bitcoin_slices::bsl;
+use bitcoin_slices::Visit;
+use bitcoin_slices::Visitor;
 use blocks_iterator::bitcoin::ScriptBuf;
 use blocks_iterator::PipeIterator;
 use env_logger::Env;
@@ -60,27 +64,37 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     for block_extra in iter {
         // for each block
-        let mut counters = Counters::default();
+        let mut visitor = CountersVisitor::default();
 
-        for (_txid, tx) in block_extra.iter_tx() {
-            // for each transaction
-            counters.increment_txno();
-
-            for output in &tx.output {
-                counters.update_from_script(&output.script_pubkey);
-            } // output
-        } // transaction
+        bsl::Block::visit(block_extra.block_bytes(), &mut visitor).expect("block bytes is a block");
 
         println!(
             "{}, {}, {}, {}",
             block_extra.height(),
             block_extra.block().header.time,
             block_extra.block().header.nonce,
-            counters
+            visitor.counters
         );
     } // block
     info!("stop");
     Ok(())
+}
+
+#[derive(Default)]
+struct CountersVisitor {
+    counters: Counters,
+}
+
+impl Visitor for CountersVisitor {
+    fn visit_transaction(&mut self, _tx: &bsl::Transaction) -> core::ops::ControlFlow<()> {
+        self.counters.increment_txno();
+        core::ops::ControlFlow::Continue(())
+    }
+    fn visit_tx_out(&mut self, _vout: usize, tx_out: &bsl::TxOut) -> core::ops::ControlFlow<()> {
+        let tx_out: bitcoin::TxOut = tx_out.into();
+        self.counters.update_from_script(&tx_out.script_pubkey);
+        core::ops::ControlFlow::Continue(())
+    }
 }
 
 impl fmt::Display for Counters {
