@@ -1,3 +1,4 @@
+use blocks_iterator::bitcoin::ScriptBuf;
 use blocks_iterator::PipeIterator;
 use env_logger::Env;
 use log::info;
@@ -20,6 +21,36 @@ struct Counters {
     others: u32,
 }
 
+impl Counters {
+    fn increment_txno(&mut self) {
+        self.txno += 1;
+    }
+
+    fn update_from_script(&mut self, script_pubkey: &ScriptBuf) {
+        if script_pubkey.is_empty() {
+            self.empty += 1;
+        } else if script_pubkey.is_p2pk() {
+            self.p2pk += 1;
+        } else if script_pubkey.is_p2pkh() {
+            self.p2pkh += 1;
+        } else if script_pubkey.is_p2sh() {
+            self.p2sh += 1;
+        } else if script_pubkey.is_multisig() {
+            self.multisig += 1;
+        } else if script_pubkey.is_p2wsh() {
+            self.p2wsh += 1;
+        } else if script_pubkey.is_p2wpkh() {
+            self.p2wpkh += 1;
+        } else if script_pubkey.is_p2tr() {
+            self.p2tr += 1;
+        } else if script_pubkey.is_op_return() {
+            self.opreturn += 1;
+        } else {
+            self.others += 1;
+        }
+    }
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     info!("start");
@@ -33,31 +64,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         for (_txid, tx) in block_extra.iter_tx() {
             // for each transaction
-            counters.txno += 1;
+            counters.increment_txno();
 
-            for (_i, output) in tx.output.iter().enumerate() {
-                // for each output
-                if output.script_pubkey.is_empty() {
-                    counters.empty += 1;
-                } else if output.script_pubkey.is_p2pk() {
-                    counters.p2pk += 1;
-                } else if output.script_pubkey.is_p2pkh() {
-                    counters.p2pkh += 1;
-                } else if output.script_pubkey.is_p2sh() {
-                    counters.p2sh += 1;
-                } else if output.script_pubkey.is_multisig() {
-                    counters.multisig += 1;
-                } else if output.script_pubkey.is_p2wsh() {
-                    counters.p2wsh += 1;
-                } else if output.script_pubkey.is_p2wpkh() {
-                    counters.p2wpkh += 1;
-                } else if output.script_pubkey.is_p2tr() {
-                    counters.p2tr += 1;
-                } else if output.script_pubkey.is_op_return() {
-                    counters.opreturn += 1;
-                } else {
-                    counters.others += 1;
-                }
+            for output in &tx.output {
+                counters.update_from_script(&output.script_pubkey);
             } // output
         } // transaction
 
