@@ -2,6 +2,7 @@ use blocks_iterator::PipeIterator;
 use env_logger::Env;
 use log::info;
 use std::error::Error;
+use std::fmt;
 use std::io;
 
 #[derive(Default)]
@@ -61,23 +62,33 @@ fn main() -> Result<(), Box<dyn Error>> {
         } // transaction
 
         println!(
-            "{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}",
+            "{}, {}, {}, {}",
             block_extra.height(),
             block_extra.block().header.time,
             block_extra.block().header.nonce,
-            counters.txno,
-            counters.empty,
-            counters.p2pk,
-            counters.p2pkh,
-            counters.p2sh,
-            counters.multisig,
-            counters.p2wsh,
-            counters.p2wpkh,
-            counters.p2tr,
-            counters.opreturn,
-            counters.others
+            counters
         );
     } // block
     info!("stop");
     Ok(())
+}
+
+impl fmt::Display for Counters {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}",
+            self.txno,
+            self.empty,
+            self.p2pk,
+            self.p2pkh,
+            self.p2sh,
+            self.multisig,
+            self.p2wsh,
+            self.p2wpkh,
+            self.p2tr,
+            self.opreturn,
+            self.others
+        )
+    }
 }
