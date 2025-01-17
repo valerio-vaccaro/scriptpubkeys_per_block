@@ -23,6 +23,8 @@ struct Counters {
     p2tr: u32,
     opreturn: u32,
     others: u32,
+    time: u32,
+    nonce: u32,
 }
 
 impl Counters {
@@ -53,6 +55,11 @@ impl Counters {
             self.others += 1;
         }
     }
+
+    fn update_from_header(&mut self, header: &bsl::BlockHeader) {
+        self.time = header.time();
+        self.nonce = header.nonce();
+    }
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -68,13 +75,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         bsl::Block::visit(block_extra.block_bytes(), &mut visitor).expect("block bytes is a block");
 
-        println!(
-            "{}, {}, {}, {}",
-            block_extra.height(),
-            block_extra.block().header.time,
-            block_extra.block().header.nonce,
-            visitor.counters
-        );
+        println!("{}, {}", block_extra.height(), visitor.counters);
     } // block
     info!("stop");
     Ok(())
@@ -95,13 +96,19 @@ impl Visitor for CountersVisitor {
         self.counters.update_from_script(&s);
         core::ops::ControlFlow::Continue(())
     }
+    fn visit_block_header(&mut self, header: &bsl::BlockHeader) -> core::ops::ControlFlow<()> {
+        self.counters.update_from_header(header);
+        core::ops::ControlFlow::Continue(())
+    }
 }
 
 impl fmt::Display for Counters {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}",
+            "{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}",
+            self.time,
+            self.nonce,
             self.txno,
             self.empty,
             self.p2pk,
