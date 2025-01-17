@@ -1,8 +1,8 @@
 use bitcoin_slices::bitcoin;
+use bitcoin_slices::bitcoin::Script;
 use bitcoin_slices::bsl;
 use bitcoin_slices::Visit;
 use bitcoin_slices::Visitor;
-use blocks_iterator::bitcoin::ScriptBuf;
 use blocks_iterator::PipeIterator;
 use env_logger::Env;
 use log::info;
@@ -30,7 +30,7 @@ impl Counters {
         self.txno += 1;
     }
 
-    fn update_from_script(&mut self, script_pubkey: &ScriptBuf) {
+    fn update_from_script(&mut self, script_pubkey: &Script) {
         if script_pubkey.is_empty() {
             self.empty += 1;
         } else if script_pubkey.is_p2pk() {
@@ -91,8 +91,8 @@ impl Visitor for CountersVisitor {
         core::ops::ControlFlow::Continue(())
     }
     fn visit_tx_out(&mut self, _vout: usize, tx_out: &bsl::TxOut) -> core::ops::ControlFlow<()> {
-        let tx_out: bitcoin::TxOut = tx_out.into();
-        self.counters.update_from_script(&tx_out.script_pubkey);
+        let s = bitcoin::Script::from_bytes(tx_out.script_pubkey());
+        self.counters.update_from_script(&s);
         core::ops::ControlFlow::Continue(())
     }
 }
